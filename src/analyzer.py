@@ -194,8 +194,16 @@ def _check_speed_issues(line: str, line_num: int, result: AnalysisResult, state:
 
     # Multiple RUN commands (should combine)
     if line.startswith("RUN "):
-        # This is simplified; real analysis would track across lines
-        pass
+        run_count = state.get("run_count", 0)
+        if run_count >= 2:
+            result.issues.append(DockerfileIssue(
+                line_number=line_num,
+                category="speed",
+                severity="warning",
+                description=f"Multiple consecutive RUN commands detected ({run_count + 1} total)",
+                suggestion="Combine consecutive RUN commands with '&&' to reduce layers and build time",
+                current_line=line
+            ))
 
 
 def _check_security_issues(line: str, line_num: int, result: AnalysisResult):
